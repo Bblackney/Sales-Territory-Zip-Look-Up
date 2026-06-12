@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Zip Lookup Artifact 2026",
+  "schemaVersion": 1,
+  "description": "Duplicate of the Sales Territory Lookup tool, named \"Zip Lookup Artifact 2026\". Rep selects Record Type (Prospect/Customer), Country, and Segment, then enters a zip/postal code to get the owning Sales Territory plus AE, BDR, and (for Customer) Payments owner. Queries Territory_Unit__c, Territory_Segment__c, and Sales_Territory__c live, applying zip-over-state precedence.",
+  "mcpTools": [
+    "mcp__6e6b4ad4-d7b0-4aae-bc7c-82948df4a6f3__salesforce_query_records"
+  ],
+  "mcpServerNames": [
+    "Salesforce"
+  ]
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zip Lookup Artifact 2026</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #14202b;
+    background: #f5f7fa;
+    line-height: 1.45;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 18px 48px; }
+  header h1 { font-size: 22px; margin: 0 0 4px; color: #0c2340; }
+  header p { margin: 0 0 20px; color: #5a6b7b; font-size: 13.5px; }
+  .card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 20px; box-shadow: 0 1px 2px rgba(16,24,40,.05);
+  }
+  label { display:block; font-size: 12px; font-weight: 600; color:#33475b; margin: 0 0 6px; text-transform: uppercase; letter-spacing:.03em; }
+  .field { margin-bottom: 16px; }
+  select, input[type=text] {
+    width: 100%; padding: 10px 12px; font-size: 15px; border:1px solid #cbd5e1;
+    border-radius: 8px; background:#fff; color:#14202b;
+  }
+  input[type=text]::placeholder { color:#9aa7b4; }
+  .toggle { display:flex; gap:8px; }
+  .toggle button {
+    flex:1; padding:10px; font-size:14px; font-weight:600; cursor:pointer;
+    border:1px solid #cbd5e1; background:#fff; color:#33475b; border-radius:8px;
+  }
+  .toggle button.active { background:#0c2340; color:#fff; border-color:#0c2340; }
+  .hint { font-size:12px; color:#7a8aa0; margin-top:6px; }
+  .search-btn {
+    width:100%; margin-top:4px; padding:12px; font-size:15px; font-weight:700; cursor:pointer;
+    background:#1a73c2; color:#fff; border:none; border-radius:8px;
+  }
+  .search-btn:disabled { opacity:.6; cursor:default; }
+  .result { margin-top:20px; }
+  .result-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; }
+  .result-head { padding:16px 20px; background:#0c2340; color:#fff; }
+  .result-head .terr { font-size:20px; font-weight:700; letter-spacing:.02em; }
+  .result-head .sub { font-size:12.5px; opacity:.85; margin-top:2px; }
+  .owners { padding:8px 20px 16px; }
+  .owner-row { display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom:1px solid #eef2f6; }
+  .owner-row:last-child { border-bottom:none; }
+  .owner-label { font-size:12.5px; color:#5a6b7b; text-transform:uppercase; letter-spacing:.03em; font-weight:600; }
+  .owner-name { font-size:15.5px; font-weight:600; color:#14202b; }
+  .owner-name.house { color:#8a97a4; font-style:italic; font-weight:500; }
+  .msg { margin-top:20px; padding:14px 16px; border-radius:10px; font-size:14px; }
+  .msg.error { background:#fdecec; color:#9b2c2c; border:1px solid #f5c2c2; }
+  .msg.warn { background:#fff7e6; color:#8a5a00; border:1px solid #ffe2a8; }
+  .msg.loading { background:#eef4fb; color:#1a4a7a; border:1px solid #cfe0f2; }
+  .matched { font-size:12px; color:#5a6b7b; margin-top:10px; }
+  .matched b { color:#14202b; }
+  footer { margin-top:22px; font-size:11.5px; color:#9aa7b4; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Zip Lookup Artifact 2026</h1>
+    <p>Enter a record type, country, segment, and postal code to find the owning territory and reps. Pulled live from Salesforce — always current.</p>
+  </header>
+
+  <div class="card">
+    <div class="field">
+      <label>Record Type</label>
+      <div class="toggle" id="rtToggle">
+        <button data-rt="Prospect" class="active">Prospect (Core)</button>
+        <button data-rt="Customer">Customer Sales</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="country">Country</label>
+      <select id="country">
+        <option value="United States">United States</option>
+        <option value="Canada">Canada</option>
+        <option value="United Kingdom">United Kingdom</option>
+        <option value="Ireland">Ireland</option>
+        <option value="Australia">Australia</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="segment">Segment</label>
+      <select id="segment">
+        <option value="Velocity">Velocity (1&ndash;4 employees)</option>
+        <option value="Strategic">Strategic (5&ndash;19 employees)</option>
+        <option value="Mid-Market">Mid-Market (20&ndash;200 employees)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="postal">Zip / Postal Code</label>
+      <input type="text" id="postal" placeholder="e.g. 90210" autocomplete="off">
+      <div class="hint" id="postalHint">United States: enter the full 5-digit zip.</div>
+    </div>
+
+    <button class="search-btn" id="searchBtn">Find Territory</button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <footer>Source of truth: Salesforce Sales Territory routing. Use the Reload button (top of this view) to refresh after territory changes.</footer>
+</div>
+
+<script>
+const SF_TOOL = "mcp__6e6b4ad4-d7b0-4aae-bc7c-82948df4a6f3__salesforce_query_records";
+const LS_KEY = "zip-lookup-2026-prefs";
+
+let recordType = "Prospect";
+
+const hints = {
+  "United States": "United States: enter the full 5-digit zip (e.g. 90210).",
+  "Canada": "Canada: the first 3 characters (FSA) are used (e.g. L4W or L4W 3T2).",
+  "United Kingdom": "United Kingdom: enter the outward code or full postcode (e.g. OX16 or OX16 9RY).",
+  "Ireland": "Ireland: enter the routing key / Eircode (e.g. D02 or D02 AF30).",
+  "Australia": "Australia: enter the full 4-digit postcode (e.g. 6005)."
+};
+
+function loadPrefs(){
+  try {
+    const p = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+    if(p.recordType){ recordType = p.recordType; }
+    if(p.country){ document.getElementById("country").value = p.country; }
+    if(p.segment){ document.getElementById("segment").value = p.segment; }
+  } catch(e){}
+}
+function savePrefs(){
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      recordType,
+      country: document.getElementById("country").value,
+      segment: document.getElementById("segment").value
+    }));
+  } catch(e){}
+}
+function syncToggle(){
+  document.querySelectorAll("#rtToggle button").forEach(b=>{
+    b.classList.toggle("active", b.dataset.rt === recordType);
+  });
+}
+function syncHint(){
+  document.getElementById("postalHint").textContent = hints[document.getElementById("country").value] || "";
+}
+
+async function sf(query){
+  const r = await window.cowork.callMcpTool(SF_TOOL, { query });
+  if(r && r.isError){
+    const t = (r.content && r.content[0] && r.content[0].text) ? r.content[0].text : "Query failed";
+    throw new Error(t);
+  }
+  let raw = (r && r.structuredContent != null) ? r.structuredContent : null;
+  if(raw == null && r && r.content && r.content[0] && r.content[0].text){
+    try { raw = JSON.parse(r.content[0].text); } catch(e){ raw = r.content[0].text; }
+  }
+  if(Array.isArray(raw)) return raw;
+  if(raw && Array.isArray(raw.records)) return raw.records;
+  if(raw && Array.isArray(raw.result)) return raw.result;
+  return [];
+}
+
+function esc(s){ return String(s).replace(/'/g, "\\'"); }
+
+function candidateKeys(raw){
+  const clean = raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const beforeSpace = raw.toUpperCase().trim().split(/\s+/)[0].replace(/[^A-Z0-9]/g, "");
+  const set = new Set();
+  if(clean) set.add(clean);
+  if(beforeSpace) set.add(beforeSpace);
+  [6,5,4,3,2].forEach(L => { if(clean.length >= L) set.add(clean.slice(0, L)); });
+  return [...set].filter(Boolean);
+}
+
+function show(html){ document.getElementById("result").innerHTML = html; }
+function msg(cls, text){ show('<div class="msg '+cls+'">'+text+'</div>'); }
+
+async function lookup(){
+  const country = document.getElementById("country").value;
+  const segment = document.getElementById("segment").value;
+  const rawPostal = document.getElementById("postal").value.trim();
+  if(!rawPostal){ msg("warn", "Enter a zip or postal code."); return; }
+
+  savePrefs();
+  msg("loading", "Searching Salesforce&hellip;");
+
+  const cands = candidateKeys(rawPostal);
+  if(cands.length === 0){ msg("warn", "That doesn't look like a valid postal code."); return; }
+
+  try {
+    const inList = cands.map(c => "'"+esc(c)+"'").join(",");
+    const units = await sf(
+      "SELECT Id, Name, State__c, Country__c FROM Territory_Unit__c " +
+      "WHERE Country__r.Name = '"+esc(country)+"' AND RecordType.Name = 'Zip' AND Name IN ("+inList+")"
+    );
+    if(units.length === 0){
+      msg("error", "No mapped postal code found for <b>"+rawPostal+"</b> in "+country+". Check the code, or it may not be routed yet.");
+      return;
+    }
+    units.sort((a,b) => (b.Name||"").length - (a.Name||"").length);
+    const unit = units[0];
+
+    const unitIds = [unit.Id, unit.State__c, unit.Country__c].filter(Boolean);
+    const idList = unitIds.map(i => "'"+esc(i)+"'").join(",");
+    const segs = await sf(
+      "SELECT Segment_Type__c, Account_Record_Type__c, Territory_Unit__c, " +
+      "Sales_Territory__r.Name, Sales_Territory__r.AE_Name__c, Sales_Territory__r.SDR_Name__c, " +
+      "Sales_Territory__r.Payments_Owner__r.FirstName, Sales_Territory__r.Payments_Owner__r.LastName " +
+      "FROM Territory_Segment__c " +
+      "WHERE Segment_Type__c = '"+esc(segment)+"' AND Account_Record_Type__c = '"+esc(recordType)+"' " +
+      "AND Territory_Unit__c IN ("+idList+")"
+    );
+    if(segs.length === 0){
+      msg("warn", "Matched <b>"+ (unit.Name||"") +"</b>, but no <b>"+segment+" / "+recordType+"</b> territory is mapped to it.");
+      return;
+    }
+
+    let chosen = null, level = "";
+    const byUnit = id => segs.find(s => s.Territory_Unit__c === id);
+    if(byUnit(unit.Id)){ chosen = byUnit(unit.Id); level = "Zip / Postal"; }
+    else if(unit.State__c && byUnit(unit.State__c)){ chosen = byUnit(unit.State__c); level = "State"; }
+    else if(unit.Country__c && byUnit(unit.Country__c)){ chosen = byUnit(unit.Country__c); level = "Country"; }
+    else { chosen = segs[0]; level = "Geography"; }
+
+    renderResult(chosen, unit, level, country, segment, rawPostal);
+  } catch(err){
+    msg("error", "Lookup failed: " + (err && err.message ? err.message : String(err)));
+  }
+}
+
+function ownerRow(label, name){
+  const isHouse = !name || /^clio team$/i.test(name) || /^outreach$/i.test(name);
+  const cls = isHouse ? "owner-name house" : "owner-name";
+  const display = name ? name : "&mdash;";
+  return '<div class="owner-row"><span class="owner-label">'+label+'</span><span class="'+cls+'">'+display+'</span></div>';
+}
+
+function renderResult(seg, unit, level, country, segment, rawPostal){
+  const t = seg.Sales_Territory__r || {};
+  let owners = "";
+  owners += ownerRow("AE Owner", t.AE_Name__c);
+  owners += ownerRow("BDR Owner", t.SDR_Name__c);
+  if(recordType === "Customer"){
+    let pay = null;
+    if(t.Payments_Owner__r){
+      const fn = t.Payments_Owner__r.FirstName || "";
+      const ln = t.Payments_Owner__r.LastName || "";
+      pay = (fn + " " + ln).trim() || null;
+    }
+    owners += ownerRow("Payments Owner", pay);
+  }
+  const html =
+    '<div class="result-card">' +
+      '<div class="result-head">' +
+        '<div class="terr">'+ (t.Name || "(unnamed territory)") +'</div>' +
+        '<div class="sub">'+ recordType +' &middot; '+ segment +' &middot; '+ country +'</div>' +
+      '</div>' +
+      '<div class="owners">'+ owners +'</div>' +
+    '</div>' +
+    '<div class="matched">Matched on <b>'+ level +'</b> level &middot; geography unit <b>'+ (unit.Name||"") +'</b> for input &ldquo;'+ rawPostal +'&rdquo;.</div>';
+  show(html);
+}
+
+document.getElementById("rtToggle").addEventListener("click", e=>{
+  if(e.target.dataset.rt){ recordType = e.target.dataset.rt; syncToggle(); savePrefs(); }
+});
+document.getElementById("country").addEventListener("change", ()=>{ syncHint(); savePrefs(); });
+document.getElementById("segment").addEventListener("change", savePrefs);
+document.getElementById("searchBtn").addEventListener("click", lookup);
+document.getElementById("postal").addEventListener("keydown", e=>{ if(e.key === "Enter") lookup(); });
+
+loadPrefs();
+syncToggle();
+syncHint();
+</script>
+</body>
+</html>
